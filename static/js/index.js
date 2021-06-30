@@ -19,6 +19,7 @@ var ws = new WebSocket('wss://' + location.host + '/one2many');
 var video;
 var webRtcPeer, pc;
 var roomIdInput, statsContainer, enableStats;
+var presenterBtn, viewerBtn, terminateBtn;
 
 window.onload = function () {
 	// console = new Console();
@@ -27,9 +28,13 @@ window.onload = function () {
 	statsContainer = document.getElementById("stats-container");
 	enableStats = document.getElementById("enable-stats");
 
-	document.getElementById('call').addEventListener('click', function () { presenter(); });
-	document.getElementById('viewer').addEventListener('click', function () { viewer(); });
-	document.getElementById('terminate').addEventListener('click', function () { stop(); });
+	presenterBtn = document.getElementById('call');
+	viewerBtn = document.getElementById('viewer');
+	terminateBtn = document.getElementById('terminate');
+	
+	presenterBtn.addEventListener('click', function () { presenter(); });
+	viewerBtn.addEventListener('click', function () { viewer(); });
+	terminateBtn.addEventListener('click', function () { stop(); });
 	enableStats.addEventListener('change', () => {
 		if (!enableStats.checked) statsContainer.innerHTML = "";
 	})
@@ -96,6 +101,9 @@ function presenter() {
 		});
 		pc = webRtcPeer.peerConnection;
 		setInterval(handlePresenterStats, 1000);
+		presenterBtn.disabled = true;
+		viewerBtn.disabled = true;
+		terminateBtn.disabled = false;
 	}
 }
 
@@ -126,6 +134,9 @@ function viewer() {
 		pc = webRtcPeer.peerConnection;
 
 		setInterval(handleViewerStats, 1000);
+		presenterBtn.disabled = true;
+		viewerBtn.disabled = true;
+		terminateBtn.disabled = false;
 	}
 }
 
@@ -159,6 +170,9 @@ function stop() {
 		}
 		sendMessage(message);
 		dispose();
+		presenterBtn.disabled = false;
+		viewerBtn.disabled = false;
+		terminateBtn.disabled = true;
 	}
 }
 
@@ -211,11 +225,9 @@ function handlePresenterStats() {
 							break;
 						case "frameWidth":
 							width = report[statName];
-							statsOutput += `<strong>${statName}:</strong> ${report[statName]}<br>\n`;
 							break;
 						case "frameHeight":
 							height = report[statName];
-							statsOutput += `<strong>${statName}:</strong> ${report[statName]}<br>\n`;
 							break;
 						default:
 							break;
@@ -223,7 +235,9 @@ function handlePresenterStats() {
 				});
 			}
 		});
-
+		if(width && height){
+			statsOutput += `<strong>Resolution:</strong> ${width}x${height}<br>\n`;
+		}
 		statsContainer.innerHTML = statsOutput;
 	})
 }
@@ -249,11 +263,9 @@ function handleViewerStats() {
 							break;
 						case "frameWidth":
 							width = report[statName];
-							statsOutput += `<strong>${statName}:</strong> ${report[statName]}<br>\n`;
 							break;
 						case "frameHeight":
 							height = report[statName];
-							statsOutput += `<strong>${statName}:</strong> ${report[statName]}<br>\n`;
 							break;
 						default:
 							break;
@@ -261,7 +273,9 @@ function handleViewerStats() {
 				});
 			}
 		});
-
+		if(width && height){
+			statsOutput += `<strong>Resolution:</strong> ${width}x${height}<br>\n`;
+		}
 		statsContainer.innerHTML = statsOutput;
 	})
 }
