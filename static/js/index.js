@@ -50,15 +50,19 @@ ws.onmessage = function (message) {
 
 	switch (parsedMessage.id) {
 		case 'presenterResponse':
+			console.info('Received presenter response: ' + message.data);
 			presenterResponse(parsedMessage);
 			break;
 		case 'viewerResponse':
+			console.info('Received viewer response: ' + message.data);
 			viewerResponse(parsedMessage);
 			break;
 		case 'stopCommunication':
+			console.info('Received stop communication: ' + message.data);
 			dispose();
 			break;
 		case 'iceCandidate':
+			console.info('Received ice candidate: ' + message.data);
 			webRtcPeer.addIceCandidate(parsedMessage.candidate)
 			break;
 		default:
@@ -69,7 +73,8 @@ ws.onmessage = function (message) {
 function presenterResponse(message) {
 	if (message.response != 'accepted') {
 		var errorMsg = message.message ? message.message : 'Unknow error';
-		console.warn('Call not accepted for the following reason: ' + errorMsg);
+		console.warn('Call not accepted for the following reason: ');
+		console.warn(errorMsg);
 		dispose();
 	} else {
 		webRtcPeer.processAnswer(message.sdpAnswer);
@@ -79,7 +84,8 @@ function presenterResponse(message) {
 function viewerResponse(message) {
 	if (message.response != 'accepted') {
 		var errorMsg = message.message ? message.message : 'Unknow error';
-		console.warn('Call not accepted for the following reason: ' + errorMsg);
+		console.warn('Call not accepted for the following reason: ');
+		console.warn(errorMsg);
 		dispose();
 	} else {
 		webRtcPeer.processAnswer(message.sdpAnswer);
@@ -99,6 +105,7 @@ function presenter() {
 			if (error) return onError(error);
 			webRtcPeer.generateOffer(onOfferPresenter);
 		});
+
 		pc = webRtcPeer.peerConnection;
 		setInterval(handlePresenterStats, 1000);
 		presenterBtn.disabled = true;
@@ -152,7 +159,7 @@ function onOfferViewer(error, offerSdp) {
 }
 
 function onIceCandidate(candidate) {
-	console.log('Local candidate' + JSON.stringify(candidate));
+	console.log('Local Ice candidate' + JSON.stringify(candidate));
 
 	var message = {
 		id: 'onIceCandidate',

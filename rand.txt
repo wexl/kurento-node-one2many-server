@@ -1,0 +1,16 @@
+Flow control and congestion management is one of the most important features of WebRTC. 
+
+WebRTC connections start with the lowest bandwidth configured and slowly ramps up to the maximum available bandwidth, 
+or to the higher limit the exploration range in case no bandwidth limitation is detected. 
+
+Notice that WebRtcEndpoints in Kurento are designed in a way that multiple WebRTC connections fed by the same stream
+share quality. When a new connection is added, as it requires to start with low bandwidth, it will cause the rest of
+connections to experience a transient period of degraded quality, until it stabilizes its bitrate. 
+
+This doesn't apply when transcoding is involved.
+Transcoders will adjust their output bitrate based in bandwidth requirements, 
+but it won't affect the original stream. 
+
+If an incoming WebRTC stream needs to be transcoded, for whatever reason, 
+all WebRtcEndpoints fed from transcoder output will share a separate quality 
+than the ones connected directly to the original stream.

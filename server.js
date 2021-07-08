@@ -45,8 +45,6 @@ var app = express();
 var idCounter = 0;
 var candidatesQueue = {};
 var kurentoClient = null;
-var presenter = null;
-var viewers = [];
 var noPresenterMessage = 'No active presenter. Try again later...';
 
 /*
@@ -93,7 +91,7 @@ wss.on('connection', function (ws) {
 
     ws.on('message', function (_message) {
         var message = JSON.parse(_message);
-        console.log('Connection ' + sessionId + ' received message ', message);
+        // console.log('Connection ' + sessionId + ' received message ', message);
 
         switch (message.id) {
             case 'presenter':
@@ -230,7 +228,6 @@ function startPresenter(sessionId, ws, roomId, sdpOffer, callback) {
                         stop(sessionId);
                         return callback(noPresenterMessage);
                     }
-                    console.log("[presenter endpoint]", webRtcEndpoint)
                     room.presenter.webRtcEndpoint = webRtcEndpoint;
 
                     if (room.candidatesQueue && room.candidatesQueue[sessionId]) {
@@ -277,11 +274,13 @@ function startPresenter(sessionId, ws, roomId, sdpOffer, callback) {
 function startViewer(sessionId, ws, roomId, sdpOffer, callback) {
     getRoom(roomId, false, (err, room) => {
         if (err) {
+            console.log("viewer 1")
             stop(sessionId, roomId);
             return callback(err);
         }
 
         if (!room.presenter) {
+            console.log("viewer 2")
             stop(sessionId, roomId);
             return callback("No present for this room");
         }
@@ -289,6 +288,7 @@ function startViewer(sessionId, ws, roomId, sdpOffer, callback) {
 
         room.presenter.pipeline.create('WebRtcEndpoint', function (error, webRtcEndpoint) {
             if (error) {
+            console.log("viewer 3")
                 stop(sessionId, roomId);
                 return callback(error);
             }
@@ -302,6 +302,7 @@ function startViewer(sessionId, ws, roomId, sdpOffer, callback) {
             }
 
             if (!room.presenter) {
+            console.log("viewer 4")
                 stop(sessionId, roomId);
                 return callback(noPresenterMessage);
             }
@@ -323,20 +324,25 @@ function startViewer(sessionId, ws, roomId, sdpOffer, callback) {
 
             webRtcEndpoint.processOffer(sdpOffer, function (error, sdpAnswer) {
                 if (error) {
+            console.log("viewer 5")
                     stop(sessionId, roomId);
                     return callback(error);
                 }
                 if (!room.presenter) {
+            console.log("viewer 6")
                     stop(sessionId, roomId);
                     return callback(noPresenterMessage);
                 }
 
                 room.presenter.webRtcEndpoint.connect(webRtcEndpoint, function (error) {
                     if (error) {
+            console.log("viewer 7")
                         stop(sessionId, roomId);
                         return callback(error);
                     }
                     if (!room.presenter) {
+                        console.log("viewer 8")
+                        
                         stop(sessionId, roomId);
                         return callback(noPresenterMessage);
                     }
@@ -344,6 +350,7 @@ function startViewer(sessionId, ws, roomId, sdpOffer, callback) {
                     callback(null, sdpAnswer);
                     webRtcEndpoint.gatherCandidates(function (error) {
                         if (error) {
+                        console.log("viewer 9")
                             stop(sessionId, roomId);
                             return callback(error);
                         }
@@ -366,7 +373,7 @@ function stop(sessionId, roomId) {
     if(room){
         if (room.presenter && room.presenter.id == sessionId) {
             for (var i in room.viewers) {
-                var viewer = viewers[i];
+                var viewer = room.viewers[i];
                 if (viewer.ws) {
                     viewer.ws.send(JSON.stringify({
                         id: 'stopCommunication'
@@ -384,11 +391,11 @@ function stop(sessionId, roomId) {
     
         clearCandidatesQueue(sessionId, roomId);
     
-        if (room.viewers.length < 1 && !room.presenter && kurentoClient !== null) {
-            console.log('Closing kurento client');
-            kurentoClient.close();
-            kurentoClient = null;
-        }
+        // if (room.viewers && room.viewers.length < 1 && !room.presenter && kurentoClient !== null) {
+        //     console.log('Closing kurento client');
+        //     kurentoClient.close();
+        //     kurentoClient = null;
+        // }
     }
 }
 
