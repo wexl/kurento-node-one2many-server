@@ -31,7 +31,7 @@ window.onload = function () {
 	presenterBtn = document.getElementById('call');
 	viewerBtn = document.getElementById('viewer');
 	terminateBtn = document.getElementById('terminate');
-	
+
 	presenterBtn.addEventListener('click', function () { presenter(); });
 	viewerBtn.addEventListener('click', function () { viewer(); });
 	terminateBtn.addEventListener('click', function () { stop(); });
@@ -76,6 +76,7 @@ function presenterResponse(message) {
 		var errorMsg = message.message ? message.message : 'Unknow error';
 		console.warn('Call not accepted for the following reason: ');
 		console.warn(errorMsg);
+		alert(errorMsg);
 		dispose();
 	} else {
 		webRtcPeer.processAnswer(message.sdpAnswer);
@@ -87,6 +88,7 @@ function viewerResponse(message) {
 		var errorMsg = message.message ? message.message : 'Unknow error';
 		console.warn('Call not accepted for the following reason: ');
 		console.warn(errorMsg);
+		alert(errorMsg);
 		dispose();
 	} else {
 		webRtcPeer.processAnswer(message.sdpAnswer);
@@ -189,6 +191,9 @@ function dispose() {
 		webRtcPeer.dispose();
 		webRtcPeer = null;
 	}
+	presenterBtn.disabled = false;
+	viewerBtn.disabled = false;
+	terminateBtn.disabled = true;
 	hideSpinner(video);
 }
 
@@ -216,7 +221,7 @@ function hideSpinner() {
 function handlePresenterStats() {
 	if (!enableStats.checked) return;
 	pc.getStats().then(stats => {
-		if(!stats) return;
+		if (!stats) return;
 		let fps, encoder, width, height;
 		let statsOutput = "<h2>Detailed Analytics</h2>";
 		stats.forEach(report => {
@@ -243,7 +248,7 @@ function handlePresenterStats() {
 				});
 			}
 		});
-		if(width && height){
+		if (width && height) {
 			statsOutput += `<strong>Resolution:</strong> ${width}x${height}<br>\n`;
 		}
 		statsContainer.innerHTML = statsOutput;
@@ -253,7 +258,7 @@ function handlePresenterStats() {
 function handleViewerStats() {
 	if (!enableStats.checked) return;
 	pc.getStats().then(stats => {
-		if(!stats) return;
+		if (!stats) return;
 		let fps, encoder, width, height;
 		let statsOutput = "<h2>Detailed Analytics</h2>";
 		stats.forEach(report => {
@@ -281,11 +286,15 @@ function handleViewerStats() {
 				});
 			}
 		});
-		if(width && height){
+		if (width && height) {
 			statsOutput += `<strong>Resolution:</strong> ${width}x${height}<br>\n`;
 		}
 		statsContainer.innerHTML = statsOutput;
 	})
+}
+
+function onError(err){
+	console.log(err);
 }
 /**
  * Lightbox utility (to display media pipeline image in a modal dialog)
