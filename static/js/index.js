@@ -41,6 +41,7 @@ window.onload = function () {
 }
 
 window.onbeforeunload = function () {
+	stop();
 	ws.close();
 }
 
