@@ -104,7 +104,7 @@ wss.on('connection', function (ws) {
                             message: error
                         }));
                     }
-                    mappings[sessionId] = rooms[message.roomId];
+
                     ws.send(JSON.stringify({
                         id: 'presenterResponse',
                         response: 'accepted',
@@ -122,7 +122,6 @@ wss.on('connection', function (ws) {
                             message: error
                         }));
                     }
-                    mappings[sessionId] = rooms[message.roomId];
                     ws.send(JSON.stringify({
                         id: 'viewerResponse',
                         response: 'accepted',
@@ -209,7 +208,7 @@ function startPresenter(sessionId, ws, roomId, sdpOffer, callback) {
                 stop(sessionId, roomId);
                 return callback(noPresenterMessage);
             }
-
+            mappings[sessionId] = roomId;
             kurentoClient.create('MediaPipeline', function (error, pipeline) {
                 if (error) {
                     stop(sessionId, roomId);
@@ -229,7 +228,7 @@ function startPresenter(sessionId, ws, roomId, sdpOffer, callback) {
                     }
 
                     if (!room.presenter) {
-                        stop(sessionId);
+                        stop(sessionId, roomId);
                         return callback(noPresenterMessage);
                     }
                     room.presenter.webRtcEndpoint = webRtcEndpoint;
@@ -291,7 +290,7 @@ function startViewer(sessionId, ws, roomId, sdpOffer, callback) {
             return callback("No present for this room");
         }
         // clearCandidatesQueue(sessionId, roomId);
-
+        mappings[sessionId] = roomId;
         room.presenter.pipeline.create('WebRtcEndpoint', function (error, webRtcEndpoint) {
             if (error) {
             console.log("viewer 3")
