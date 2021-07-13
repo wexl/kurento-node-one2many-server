@@ -97,11 +97,24 @@ function viewerResponse(message) {
 
 function presenter() {
 	if (!webRtcPeer) {
-		showSpinner(video);
 
 		var options = {
 			localVideo: video,
-			onicecandidate: onIceCandidate
+			onicecandidate: onIceCandidate,
+			configuration: {
+				iceServers: [
+					{
+						urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
+					},
+				],
+			},
+			mediaConstraints: {
+				audio: false,
+				video: {
+					width: 720,
+					framerate: 60
+				}
+			}
 		}
 
 		webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options, function (error) {
@@ -130,11 +143,24 @@ function onOfferPresenter(error, offerSdp) {
 
 function viewer() {
 	if (!webRtcPeer) {
-		showSpinner(video);
 
 		var options = {
 			remoteVideo: video,
-			onicecandidate: onIceCandidate
+			onicecandidate: onIceCandidate,
+			configuration: {
+				iceServers: [
+					{
+						urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
+					},
+				],
+			},
+			mediaConstraints: {
+				audio: false,
+				video: {
+					width: 720,
+					framerate: 60
+				}
+			}
 		}
 
 		webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options, function (error) {
@@ -194,7 +220,6 @@ function dispose() {
 	presenterBtn.disabled = false;
 	viewerBtn.disabled = false;
 	terminateBtn.disabled = true;
-	hideSpinner(video);
 }
 
 function sendMessage(message) {
@@ -293,7 +318,7 @@ function handleViewerStats() {
 	})
 }
 
-function onError(err){
+function onError(err) {
 	console.log(err);
 }
 /**

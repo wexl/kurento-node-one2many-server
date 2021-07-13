@@ -70,6 +70,7 @@ function nextUniqueId() {
 // rooms storage
 // key: roomId, values: Presenter, Viewers
 var rooms = {};
+var mappings = {};
 
 /*
  * Management of WebSocket messages
@@ -81,12 +82,12 @@ wss.on('connection', function (ws) {
 
     ws.on('error', function (error) {
         console.log('Connection ' + sessionId + ' error');
-        stop(sessionId);
+        stop(sessionId, mappings[sessionId]);
     });
 
     ws.on('close', function () {
         console.log('Connection ' + sessionId + ' closed');
-        stop(sessionId);
+        stop(sessionId, mappings[sessionId]);
     });
 
     ws.on('message', function (_message) {
@@ -103,6 +104,7 @@ wss.on('connection', function (ws) {
                             message: error
                         }));
                     }
+                    mappings[sessionId] = rooms[message.roomId];
                     ws.send(JSON.stringify({
                         id: 'presenterResponse',
                         response: 'accepted',
@@ -120,7 +122,7 @@ wss.on('connection', function (ws) {
                             message: error
                         }));
                     }
-
+                    mappings[sessionId] = rooms[message.roomId];
                     ws.send(JSON.stringify({
                         id: 'viewerResponse',
                         response: 'accepted',
@@ -181,6 +183,8 @@ function getKurentoClient(callback) {
 }
 
 function startPresenter(sessionId, ws, roomId, sdpOffer, callback) {
+    clearCandidatesQueue(sessionId, roomId);
+
     getRoom(roomId, true, (err, room) => {
         if (err) {
             stop(sessionId, roomId);
@@ -272,6 +276,8 @@ function startPresenter(sessionId, ws, roomId, sdpOffer, callback) {
 }
 
 function startViewer(sessionId, ws, roomId, sdpOffer, callback) {
+    clearCandidatesQueue(sessionId, roomId);
+    
     getRoom(roomId, false, (err, room) => {
         if (err) {
             console.log("viewer 1")
@@ -390,7 +396,7 @@ function stop(sessionId, roomId) {
         }
     
         clearCandidatesQueue(sessionId, roomId);
-    
+        delete mappings[sessionId];
         // if (room.viewers && room.viewers.length < 1 && !room.presenter && kurentoClient !== null) {
         //     console.log('Closing kurento client');
         //     kurentoClient.close();
