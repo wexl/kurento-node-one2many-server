@@ -109,7 +109,7 @@ function presenter() {
 				],
 			},
 			mediaConstraints: {
-				audio: false,
+				audio: true,
 				video: {
 					width: 720,
 					framerate: 60
@@ -155,7 +155,7 @@ function viewer() {
 				],
 			},
 			mediaConstraints: {
-				audio: false,
+				audio: true,
 				video: {
 					width: 720,
 					framerate: 60
