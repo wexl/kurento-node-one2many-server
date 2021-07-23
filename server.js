@@ -80,6 +80,11 @@ wss.on('connection', function (ws) {
     var sessionId = nextUniqueId();
     console.log('Connection received with sessionId ' + sessionId);
 
+    ws.send(JSON.stringify({
+        id: "rooms",
+        rooms: Object.keys(rooms)
+    }));
+
     ws.on('error', function (error) {
         console.log('Connection ' + sessionId + ' error');
         stop(sessionId, mappings[sessionId]);
